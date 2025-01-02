@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartela de Bingo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f1f1;
+        }
+        .cartela {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+            justify-content: center;
+            margin-top: 50px;
+            max-width: 300px;
+            margin: 50px auto;
+        }
+        .celula {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f7f7f7;
+            border: 1px solid #ccc;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .celula.livre {
+            background-color: #d3ffd3;
+        }
+        .titulo {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .botao-gerar {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* Inicialmente escondido */
+        }
+        .botao-gerar:hover {
+            background-color: #45a049;
+        }
+        .numeros-chamados {
+            margin-top: 30px;
+            text-align: left;
+            display: inline-block;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 200px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f7f7f7;
+        }
+        .numero-chamado {
+            margin: 5px;
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .campo-senha {
+            margin-top: 20px;
+        }
+        .erro-senha {
+            color: red;
+            margin-top: 10px;
+        }
+        .botao-silenciar {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .botao-silenciar:hover {
+            background-color: #d32f2f;
+        }
+        /* Estilo para o pop-up */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #ffffff;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 30px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .popup.active {
+            display: block;
+        }
+        .popup .button-close {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .popup .button-close:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="titulo">Cartela de Bingo</div>
+    
+    <div class="cartela" id="cartela">
+        <div class="celula" id="cell1" onclick="marcarNumero('cell1')"></div>
+        <div class="celula" id="cell2" onclick="marcarNumero('cell2')"></div>
+        <div class="celula" id="cell3" onclick="marcarNumero('cell3')"></div>
+        <div class="celula" id="cell4" onclick="marcarNumero('cell4')"></div>
+        <div class="celula" id="cell5" onclick="marcarNumero('cell5')"></div>
+        
+        <div class="celula" id="cell6" onclick="marcarNumero('cell6')"></div>
+        <div class="celula" id="cell7" onclick="marcarNumero('cell7')"></div>
+        <div class="celula livre" id="cell8">LIVRE</div>
+        <div class="celula" id="cell9" onclick="marcarNumero('cell9')"></div>
+        <div class="celula" id="cell10" onclick="marcarNumero('cell10')"></div>
+        
+        <div class="celula" id="cell11" onclick="marcarNumero('cell11')"></div>
+        <div class="celula" id="cell12" onclick="marcarNumero('cell12')"></div>
+        <div class="celula" id="cell13" onclick="marcarNumero('cell13')"></div>
+        <div class="celula" id="cell14" onclick="marcarNumero('cell14')"></div>
+        <div class="celula" id="cell15" onclick="marcarNumero('cell15')"></div>
+        
+        <div class="celula" id="cell16" onclick="marcarNumero('cell16')"></div>
+        <div class="celula" id="cell17" onclick="marcarNumero('cell17')"></div>
+        <div class="celula" id="cell18" onclick="marcarNumero('cell18')"></div>
+        <div class="celula" id="cell19" onclick="marcarNumero('cell19')"></div>
+        <div class="celula" id="cell20" onclick="marcarNumero('cell20')"></div>
+    </div>
+
+    <!-- Campo para inserir a senha -->
+    <div class="campo-senha">
+        <label for="senha">Digite a senha:</label>
+        <input type="password" id="senha" name="senha" placeholder="Senha">
+        <button onclick="verificarSenha()">Confirmar</button>
+    </div>
+
+    <!-- Botão para gerar nova cartela -->
+    <button class="botao-gerar" onclick="gerarNovaCartela()">Gerar Nova Cartela</button>
+
+    <div class="numeros-chamados" id="numerosChamados">
+        <strong>Números Chamados:</strong>
+        <!-- Números chamados serão exibidos aqui -->
+    </div>
+
+    <div class="erro-senha" id="erroSenha"></div>
+
+    <!-- Tag de áudio para o som de clique -->
+    <audio id="clickSound">
+        <source src="click-sound.mp3" type="audio/mpeg">
+        Seu navegador não suporta o elemento de áudio.
+    </audio>
+
+    <!-- Botão para silenciar o som -->
+    <button class="botao-silenciar" onclick="alternarSom()">Silenciar Som</button>
+
+    <!-- Pop-up -->
+    <div class="popup" id="popupBingo">
+        <div>BINGOOOOOO</div>
+        <button class="button-close" onclick="fecharPopup()">Fechar</button>
+    </div>
+
+    <script>
+        var somAtivo = true;  // Variável para controlar se o som está ativado ou não
+        var numerosChamados = 0;  // Contador para os números chamados
+        var cartelaCompleta = 0;  // Variável para acompanhar os números marcados
+
+        // Função para verificar a senha
+        function verificarSenha() {
+            var senha = document.getElementById("senha").value;
+            var erroSenha = document.getElementById("erroSenha");
+            var botaoGerar = document.querySelector(".botao-gerar");
+            var campoSenha = document.getElementById("senha");
+
+            if (senha === "2383") {
+                botaoGerar.style.display = "inline-block";
+                erroSenha.textContent = ""; // Limpa a mensagem de erro
+                campoSenha.value = ""; // Limpa o campo de senha
+            } else {
+                erroSenha.textContent = "Senha incorreta! Tente novamente.";
+            }
+        }
+
+        // Função para gerar uma nova cartela de bingo com números aleatórios
+        function gerarNovaCartela() {
+            var celulas = [
+                "cell1", "cell2", "cell3", "cell4", "cell5",
+                "cell6", "cell7", "cell9", "cell10", "cell11",
+                "cell12", "cell13", "cell14", "cell15", "cell16",
+                "cell17", "cell18", "cell19", "cell20"
+            ];
+
+            var numeros = [];
+            while (numeros.length < 24) {  // A cartela tem 24 células
+                var numero = Math.floor(Math.random() * 75) + 1;
+                if (numeros.indexOf(numero) === -1) {  // Garante que o número é único
+                    numeros.push(numero);
+                }
+            }
+
+            for (var i = 0; i < celulas.length; i++) {
+                document.getElementById(celulas[i]).textContent = numeros[i];
+            }
+
+            document.querySelector(".botao-gerar").style.display = "none";
+        }
+
+        // Função para marcar um número na cartela
+        function marcarNumero(celulaId) {
+            var celula = document.getElementById(celulaId);
+            if (celula.textContent === "") return;  // Se a célula estiver vazia, não faz nada
+
+            var numero = celula.textContent;
+            celula.textContent = "";  // Remove o número da célula
+
+            // Cria um número chamado
+            var numeroChamado = document.createElement("span");
+            numeroChamado.className = "numero-chamado";
+            numeroChamado.textContent = numero;
+
+            numeroChamado.onclick = function() {
+                voltarParaCartela(celulaId, numero, numeroChamado);
+            };
+
+            document.getElementById("numerosChamados").appendChild(numeroChamado);
+
+            if (somAtivo) {
+                tocarSomClique();
+            }
+
+            numerosChamados++;
+
+            if (numerosChamados === 24) {
+                exibirPopupBingo();
+            }
+        }
+
+        function voltarParaCartela(celulaId, numero, numeroChamado) {
+            document.getElementById(celulaId).textContent = numero;
+            numeroChamado.remove();
+            numerosChamados--;
+        }
+
+        function tocarSomClique() {
+            var clickSound = document.getElementById("clickSound");
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        function alternarSom() {
+            somAtivo = !somAtivo;
+            var botaoSilenciar = document.querySelector(".botao-silenciar");
+            botaoSilenciar.textContent = somAtivo ? "Silenciar Som" : "Ativar Som";
+        }
+
+        function exibirPopupBingo() {
+            var popup = document.getElementById("popupBingo");
+            popup.classList.add("active");
+        }
+
+        function fecharPopup() {
+            var popup = document.getElementById("popupBingo");
+            popup.classList.remove("active");
+        }
+    </script>
+
+</body>
+</html>
