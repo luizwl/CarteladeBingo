@@ -214,6 +214,10 @@
 
         // Função para gerar uma nova cartela de bingo com números aleatórios
         function gerarNovaCartela() {
+            // Limpa a lista de números chamados
+            document.getElementById("numerosChamados").innerHTML = "<strong>Números Chamados:</strong>";
+
+            // Lista de células, exceto a célula "livre"
             var celulas = [
                 "cell1", "cell2", "cell3", "cell4", "cell5",
                 "cell6", "cell7", "cell9", "cell10", "cell11",
@@ -222,24 +226,28 @@
             ];
 
             var numeros = [];
-            while (numeros.length < 24) {  // A cartela tem 24 células
+            while (numeros.length < 19) {  // 19 números aleatórios, pois o "LIVRE" não conta
                 var numero = Math.floor(Math.random() * 75) + 1;
                 if (numeros.indexOf(numero) === -1) {  // Garante que o número é único
                     numeros.push(numero);
                 }
             }
 
+            // Adiciona os números gerados nas células, exceto a célula "livre"
             for (var i = 0; i < celulas.length; i++) {
                 document.getElementById(celulas[i]).textContent = numeros[i];
             }
 
+            // Reseta os contadores e esconde o botão de gerar
+            numerosChamados = 0;
+            cartelaCompleta = 0;
             document.querySelector(".botao-gerar").style.display = "none";
         }
 
         // Função para marcar um número na cartela
         function marcarNumero(celulaId) {
             var celula = document.getElementById(celulaId);
-            if (celula.textContent === "") return;  // Se a célula estiver vazia, não faz nada
+            if (celula.textContent === "" || celula.classList.contains('livre')) return;  // Se a célula estiver vazia ou for a "livre", não faz nada
 
             var numero = celula.textContent;
             celula.textContent = "";  // Remove o número da célula
@@ -260,8 +268,9 @@
             }
 
             numerosChamados++;
+            cartelaCompleta++;
 
-            if (numerosChamados === 24) {
+            if (cartelaCompleta === 19) {  // Cartela completa tem 19 números
                 exibirPopupBingo();
             }
         }
@@ -270,6 +279,7 @@
             document.getElementById(celulaId).textContent = numero;
             numeroChamado.remove();
             numerosChamados--;
+            cartelaCompleta--;
         }
 
         function tocarSomClique() {
@@ -294,6 +304,5 @@
             popup.classList.remove("active");
         }
     </script>
-
 </body>
 </html>
