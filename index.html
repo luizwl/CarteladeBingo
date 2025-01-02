@@ -193,7 +193,7 @@
 
     <script>
         var somAtivo = true;  // Variável para controlar se o som está ativado ou não
-        var numerosChamados = 0;  // Contador para os números chamados
+        var numerosChamados = localStorage.getItem("numerosChamados") ? JSON.parse(localStorage.getItem("numerosChamados")) : [];
         var cartelaCompleta = 0;  // Variável para acompanhar os números marcados
 
         // Função para verificar a senha
@@ -208,13 +208,14 @@
                 erroSenha.textContent = ""; // Limpa a mensagem de erro
                 campoSenha.value = ""; // Limpa o campo de senha
             } else {
-                erroSenha.textContent = "Senha incorreta! Tente novamente.";
+                erroSenha.textContent = "Senha incorreta!";
             }
         }
 
-        // Função para gerar uma nova cartela de bingo com números aleatórios
+        // Função para gerar nova cartela
         function gerarNovaCartela() {
-            // Limpa a lista de números chamados
+            // Reiniciar o contador de cartela
+            cartelaCompleta = 0;
             document.getElementById("numerosChamados").innerHTML = "<strong>Números Chamados:</strong>";
 
             // Lista de células, exceto a célula "livre"
@@ -238,10 +239,8 @@
                 document.getElementById(celulas[i]).textContent = numeros[i];
             }
 
-            // Reseta os contadores e esconde o botão de gerar
-            numerosChamados = 0;
-            cartelaCompleta = 0;
-            document.querySelector(".botao-gerar").style.display = "none";
+            // Salva os números chamados no localStorage para preservá-los
+            localStorage.setItem("numerosChamados", JSON.stringify(numeros));
         }
 
         // Função para marcar um número na cartela
@@ -267,7 +266,9 @@
                 tocarSomClique();
             }
 
-            numerosChamados++;
+            numerosChamados.push(numero);
+            localStorage.setItem("numerosChamados", JSON.stringify(numerosChamados));
+
             cartelaCompleta++;
 
             if (cartelaCompleta === 19) {  // Cartela completa tem 19 números
@@ -278,7 +279,11 @@
         function voltarParaCartela(celulaId, numero, numeroChamado) {
             document.getElementById(celulaId).textContent = numero;
             numeroChamado.remove();
-            numerosChamados--;
+            var index = numerosChamados.indexOf(numero);
+            if (index !== -1) {
+                numerosChamados.splice(index, 1);
+            }
+            localStorage.setItem("numerosChamados", JSON.stringify(numerosChamados));
             cartelaCompleta--;
         }
 
@@ -302,6 +307,16 @@
         function fecharPopup() {
             var popup = document.getElementById("popupBingo");
             popup.classList.remove("active");
+        }
+
+        // Carregar os números chamados ao inicializar a página
+        if (numerosChamados.length > 0) {
+            numerosChamados.forEach(function(numero) {
+                var numeroChamado = document.createElement("span");
+                numeroChamado.className = "numero-chamado";
+                numeroChamado.textContent = numero;
+                document.getElementById("numerosChamados").appendChild(numeroChamado);
+            });
         }
     </script>
 </body>
