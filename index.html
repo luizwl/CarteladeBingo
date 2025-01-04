@@ -1,6 +1,177 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+<head>// Função para verificar a senha
+function verificarSenha() {
+    var senha = document.getElementById("senha").value;
+    var erroSenha = document.getElementById("erroSenha");
+    var botaoGerar = document.querySelector(".botao-gerar");
+    var campoSenha = document.getElementById("senha");
+
+    if (senha === "2383") {
+        // Se a senha estiver correta, mostra o botão
+        botaoGerar.style.display = "inline-block";
+        erroSenha.textContent = ""; // Limpa a mensagem de erro
+        campoSenha.value = ""; // Limpa o campo de senha
+    } else {
+        // Se a senha estiver incorreta, mostra uma mensagem de erro
+        erroSenha.textContent = "Senha incorreta! Tente novamente.";
+    }
+}
+
+// Função para gerar uma nova cartela de bingo com números aleatórios
+function gerarNovaCartela() {
+    // Limpa a lista de números chamados
+    document.getElementById("numerosChamados").innerHTML = "<strong>Números Chamados:</strong>";
+
+    // Array com os IDs das células da cartela (exceto a célula "LIVRE")
+    var celulas = [
+        "cell1", "cell2", "cell3", "cell4", "cell5",
+        "cell6", "cell7", "cell9", "cell10", "cell11",
+        "cell12", "cell13", "cell14", "cell15", "cell16",
+        "cell17", "cell18", "cell19", "cell20"
+    ];
+
+    // Array para armazenar os números já gerados para evitar duplicação
+    var numerosGerados = [];
+
+    // Função para gerar um número aleatório entre 1 e 100
+    function gerarNumero() {
+        var numero;
+        do {
+            numero = Math.floor(Math.random() * 100) + 1;
+        } while (numerosGerados.includes(numero)); // Evita duplicação
+        numerosGerados.push(numero);
+        return numero;
+    }
+
+    // Gera 20 números e os armazena no array
+    for (var i = 0; i < 20; i++) {
+        gerarNumero();
+    }
+
+    // Ordena os números em ordem crescente (menor para maior)
+    numerosGerados.sort(function(a, b) {
+        return a - b;
+    });
+
+    // Preenche todas as células com números aleatórios em ordem crescente
+    celulas.forEach(function(celulaId, index) {
+        document.getElementById(celulaId).textContent = numerosGerados[index];
+        // Adiciona o evento de clique para ocultar o número e adicioná-lo à lista lateral
+        document.getElementById(celulaId).onclick = function() {
+            marcarNumero(celulaId, numerosGerados[index]);
+        };
+    });
+
+    // Deixa a célula central como "LIVRE"
+    document.getElementById("cell8").textContent = "LIVRE";
+
+    // Armazena os números da cartela e os estados das células no LocalStorage
+    var cartela = {
+        numeros: numerosGerados,
+        estados: celulas.reduce(function(obj, celulaId) {
+            obj[celulaId] = false; // Inicialmente todas as células estão desmarcadas
+            return obj;
+        }, {}),
+        numerosChamados: [] // Lista para os números chamados
+    };
+    localStorage.setItem('cartela', JSON.stringify(cartela));
+
+    // Esconde o botão de gerar cartela após ele ser clicado
+    document.querySelector(".botao-gerar").style.display = "none";
+}
+
+// Função para marcar um número e movê-lo para a lista de chamados
+function marcarNumero(celulaId, numero) {
+    var celula = document.getElementById(celulaId);
+    if (celula.textContent === "") return; // Se a célula estiver vazia, não faz nada
+
+    // Oculta o número da célula
+    celula.textContent = "";
+
+    // Cria um elemento para o número chamado
+    var numeroChamado = document.createElement("span");
+    numeroChamado.className = "numero-chamado";
+    numeroChamado.textContent = numero;
+
+    // Função de clique para remover o número da lista
+    numeroChamado.onclick = function() {
+        voltarParaCartela(celulaId, numero, numeroChamado);
+    };
+
+    // Adiciona o número à lista lateral
+    document.getElementById("numerosChamados").appendChild(numeroChamado);
+
+    // Atualiza o estado da célula no LocalStorage
+    var cartela = JSON.parse(localStorage.getItem('cartela'));
+    cartela.estados[celulaId] = true; // Marca como "marcada"
+    cartela.numerosChamados.push(numero); // Adiciona o número à lista de chamados
+    localStorage.setItem('cartela', JSON.stringify(cartela));
+}
+
+// Função para voltar o número para a cartela quando clicado na lista lateral
+function voltarParaCartela(celulaId, numero, numeroChamado) {
+    var celula = document.getElementById(celulaId);
+
+    // Restaura o número na célula
+    celula.textContent = numero;
+
+    // Remove o número da lista lateral
+    numeroChamado.remove();
+
+    // Atualiza o estado da célula no LocalStorage
+    var cartela = JSON.parse(localStorage.getItem('cartela'));
+    cartela.estados[celulaId] = false; // Marca como "desmarcada"
+    cartela.numerosChamados = cartela.numerosChamados.filter(function(n) {
+        return n !== numero;
+    }); // Remove da lista de chamados
+    localStorage.setItem('cartela', JSON.stringify(cartela));
+}
+
+// Função para carregar a cartela e os números chamados ao recarregar a página
+function carregarCartela() {
+    var cartela = JSON.parse(localStorage.getItem('cartela'));
+    if (cartela) {
+        var celulas = [
+            "cell1", "cell2", "cell3", "cell4", "cell5",
+            "cell6", "cell7", "cell9", "cell10", "cell11",
+            "cell12", "cell13", "cell14", "cell15", "cell16",
+            "cell17", "cell18", "cell19", "cell20"
+        ];
+
+        // Preenche as células com os números salvos no LocalStorage
+        celulas.forEach(function(celulaId, index) {
+            document.getElementById(celulaId).textContent = cartela.numeros[index];
+            if (cartela.estados[celulaId]) {
+                document.getElementById(celulaId).textContent = "";
+            }
+            // Adiciona o evento de clique para ocultar o número e adicioná-lo à lista lateral
+            document.getElementById(celulaId).onclick = function() {
+                marcarNumero(celulaId, cartela.numeros[index]);
+            };
+        });
+
+        // Deixa a célula central como "LIVRE"
+        document.getElementById("cell8").textContent = "LIVRE";
+
+        // Carrega a lista de números chamados
+        cartela.numerosChamados.forEach(function(numero) {
+            var numeroChamado = document.createElement("span");
+            numeroChamado.className = "numero-chamado";
+            numeroChamado.textContent = numero;
+
+            numeroChamado.onclick = function() {
+                voltarParaCartela(celulaId, numero, numeroChamado);
+            };
+
+            document.getElementById("numerosChamados").appendChild(numeroChamado);
+        });
+    }
+}
+
+// Tenta carregar a cartela salva quando a página for carregada
+window.onload = carregarCartela;
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartela de Bingo</title>
